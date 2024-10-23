@@ -97,14 +97,14 @@ if ('TEST_CHROME' in process.env) {
 				.setChromeOptions(options)
 				.build();
 			
-			// No API to retrieve extension ID. Hacks, sigh.
+			// Get the extension ID
 			await driver.get("chrome://system/");
-			await driver.wait(until.elementLocated({id: 'extensions-value-btn'}), 60*1000);
-			let extBtn = await driver.findElement({css: '#extensions-value-btn'});
-			await extBtn.click();
-			let contentElem = await driver.findElement({css: '#content'});
-			let text = await contentElem.getText();
-			let extId = text.match(/([^\s]*) : Zotero Connector/)[1];
+			await driver.sleep(3e3);
+			const extId = await driver.executeScript(() => 
+				document.querySelector('system-app').entries_
+					.find(entry => entry.key == "extensions")
+					.value.match(/([^\s]*) : Zotero Connector/)[1]
+			);
 			
 			// We got the extension ID and test URL, let's test
 			let testUrl = `chrome-extension://${extId}/test/test.html`;
